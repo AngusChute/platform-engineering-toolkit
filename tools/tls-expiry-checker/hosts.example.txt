@@ -1,0 +1,6 @@
+# One host per line. Optionally specify a port with host:port (defaults to 443).
+# Lines starting with # are ignored.
+
+api.example.com
+internal-service.example.com:8443
+example.com
