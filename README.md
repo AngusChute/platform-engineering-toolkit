@@ -40,7 +40,7 @@ The goal isn't to reinvent any of these tools — it's to show how they fit toge
     │ k8s-drift-detector│         │   slack-alert-digest      │
     │(Python, scheduled)│         │   (Python, event-driven)  │
     └───────────────────┘         └───────────────────────────┘
-              │                                  │
+              │                                 │
     ┌─────────▼─────────┐         ┌─────────────▼─────────────┐
     │tls-expiry-checker │         │  sql-ag-health-checker    │
     │(Python, scheduled)│         │  (Python, scheduled)      │
