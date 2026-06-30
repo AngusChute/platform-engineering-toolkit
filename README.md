@@ -6,7 +6,7 @@ This repo brings together three pieces that are usually scattered across separat
 
 1. **[`terraform-gke/`](./terraform-gke)** — Infrastructure as Code for a production-grade GKE cluster
 2. **[`gitops-flux/`](./gitops-flux)** — A Flux-based GitOps structure for continuous deployment to that cluster
-3. **[`tools/`](./tools)** — Two small Python utilities that solve real operational problems: configuration drift detection and alert-noise reduction
+3. **[`tools/`](./tools)** — Four small Python utilities that solve real operational problems: configuration drift detection, alert-noise reduction, TLS certificate expiry monitoring, and SQL Server Always On AG health checking
 
 ## Why this stack
 
@@ -18,28 +18,33 @@ The goal isn't to reinvent any of these tools — it's to show how they fit toge
 
 ```
                     ┌─────────────────────┐
-                    │   Git Repository      │
-                    │  (source of truth)     │
-                    └──────────┬───────────┘
+                    │   Git Repository    │
+                    │  (source of truth)  │
+                    └──────────┬──────────┘
                                │
                     ┌──────────▼───────────┐
-                    │   Flux Controllers     │
-                    │  (continuous reconcile)│
+                    │   Flux Controllers   │
+                    │(continuous reconcile)│
                     └──────────┬───────────┘
                                │
         ┌──────────────────────▼──────────────────────┐
-        │              GKE Cluster (Terraform)            │
-        │  ┌────────────┐  ┌────────────┐  ┌──────────┐ │
-        │  │  Workloads   │  │ Monitoring   │  │  Ingress   │ │
-        │  └────────────┘  └────────────┘  └──────────┘ │
-        └───────────────────────────────────────────────┘
+        │              GKE Cluster (Terraform)        │
+        │ ┌────────────┐  ┌────────────┐ ┌──────────┐ │
+        │ │ Workloads  │  │ Monitoring │ │  Ingress │ │
+        │ └────────────┘  └────────────┘ └──────────┘ │
+        └─────────────────────────────────────────────┘
                                │
               ┌────────────────┴────────────────┐
+              │                                 │
+    ┌─────────▼─────────┐         ┌─────────────▼─────────────┐
+    │ k8s-drift-detector│         │   slack-alert-digest      │
+    │(Python, scheduled)│         │   (Python, event-driven)  │
+    └───────────────────┘         └───────────────────────────┘
               │                                  │
     ┌─────────▼─────────┐         ┌─────────────▼─────────────┐
-    │  k8s-drift-detector  │         │   slack-alert-digest        │
-    │  (Python, scheduled) │         │   (Python, event-driven)     │
-    └────────────────────┘         └────────────────────────────┘
+    │tls-expiry-checker │         │  sql-ag-health-checker    │
+    │(Python, scheduled)│         │  (Python, scheduled)      │
+    └───────────────────┘         └───────────────────────────┘
 ```
 
 ## Repo structure
@@ -51,8 +56,10 @@ platform-engineering-toolkit/
 │   ├── clusters/production/ # Cluster-level Flux config
 │   └── apps/                # Application manifests (base + overlays)
 └── tools/
-    ├── k8s-drift-detector/  # Detects drift between desired & live cluster state
-    └── slack-alert-digest/  # Aggregates noisy alerts into a single digest
+    ├── k8s-drift-detector/   # Detects drift between desired & live cluster state
+    ├── slack-alert-digest/   # Aggregates noisy alerts into a single digest
+    ├── tls-expiry-checker/   # Monitors TLS certificate expiry across hosts
+    └── sql-ag-health-checker/# Checks SQL Server Always On AG replica/database health
 ```
 
 Each subdirectory has its own README with setup and usage instructions.
