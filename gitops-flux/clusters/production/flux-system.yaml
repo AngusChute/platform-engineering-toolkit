@@ -1,0 +1,29 @@
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: platform-toolkit
+  namespace: flux-system
+spec:
+  interval: 1m
+  ref:
+    branch: main
+  url: https://github.com/AngusChute/platform-engineering-toolkit
+---
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: apps-production
+  namespace: flux-system
+spec:
+  interval: 5m
+  path: ./gitops-flux/apps/production
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: platform-toolkit
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: example-api
+      namespace: default
+  timeout: 2m
